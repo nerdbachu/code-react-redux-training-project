@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import PropTypes from "prop-types";
 import AuthorList from "./AuthorList";
 import { loadAuthors } from "../../redux/actions/authorActions";
 import Spinner from "../common/Spinner";
@@ -18,6 +17,7 @@ function AuthorsPage(props) {
   }
 
   useEffect(() => {
+    console.log("loaded authors are", authors);
     if (authors.length === 0) {
       loadAuthorsHandle();
     }
@@ -34,6 +34,7 @@ function AuthorsPage(props) {
           <button
             style={{ marginBottom: 20 }}
             className="btn btn-primary add-course"
+            // eslint-disable-next-line react/prop-types
             onClick={() => props.history.push("/author")}
           >
             Add Author
@@ -52,10 +53,5 @@ function AuthorsPage(props) {
     </div>
   );
 }
-
-AuthorsPage.propTypes = {
-  authors: PropTypes.array.isRequired,
-  history: PropTypes.array.isRequired,
-};
 
 export default AuthorsPage;

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import PropTypes from "prop-types";
-import AuthorList from "./AuthorList";
 import { loadAuthors, saveAuthor } from "../../redux/actions/authorActions";
 import Spinner from "../common/Spinner";
 import AuthorForm from "./AuthorForm";
@@ -9,29 +7,44 @@ import { toast } from "react-toastify";
 import { newAuthor } from "../../../tools/mockData";
 
 function ManageAuthorPage(props) {
-  const [author, setAuthor] = useState({});
+  const [author, setAuthor] = useState(newAuthor);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
-  function getCourseBySlug(authors, slug) {
+  function getAuthorBySlug(authors, slug) {
     return authors.find((author) => author.authorSlug === slug);
   }
 
   const authors = useSelector((state) => state.authors);
-
-  useEffect(() => {
-    //asdas
-    const slug = props.match.params.authorSlug;
-    console.log("authorSlugis : ", slug || "no slug found");
-
-    const author =
-      slug && authors.length > 0 ? getCourseBySlug(authors, slug) : newAuthor;
-
-    setAuthor(author);
-    //sdsad
-  }, []);
+  const loading = useSelector((state) => state.apiCallsInProgress > 0);
 
   const dispatch = useDispatch();
+
+  function loadAuthorsHandle() {
+    dispatch(loadAuthors()).catch((error) => {
+      alert("Loading authors failed " + error);
+    });
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react/prop-types
+    const slug = props.match.params.authorSlug;
+
+    // console.log("authorSlug is : ", slug || "no slug found");
+    // console.log("authors are : ", authors || "no authors found");
+
+    if (authors.length === 0 && slug) {
+      console.log("you are in");
+      loadAuthorsHandle();
+    } else {
+      const author =
+        slug && authors.length > 0 ? getAuthorBySlug(authors, slug) : newAuthor;
+      // console.log("new author is : ", author || "no authors found");
+
+      if (!author) return;
+      setAuthor(author);
+    }
+  }, [authors.length]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -53,7 +66,7 @@ function ManageAuthorPage(props) {
   }
 
   function handleSave(event) {
-    console.log("Author to save is: ", author);
+    // console.log("Author to save is: ", author);
     event.preventDefault();
     if (!formIsValid()) return;
 
@@ -62,6 +75,7 @@ function ManageAuthorPage(props) {
     dispatch(saveAuthor(author))
       .then(() => {
         toast.success("Author Saved");
+        // eslint-disable-next-line react/prop-types
         props.history.push("/authors");
       })
       .catch((error) => {
@@ -72,8 +86,10 @@ function ManageAuthorPage(props) {
 
   return (
     <div>
-      {authors.length === 0 ? (
-        <Spinner />
+      {loading ? (
+        <>
+          <Spinner />
+        </>
       ) : (
         <>
           <AuthorForm
@@ -88,10 +104,5 @@ function ManageAuthorPage(props) {
     </div>
   );
 }
-
-// AuthorsPage.propTypes = {
-//   authors: PropTypes.array.isRequired,
-//   history: PropTypes.array.isRequired,
-// };
 
 export default ManageAuthorPage;
